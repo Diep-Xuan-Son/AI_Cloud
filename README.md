@@ -1,3 +1,9 @@
+## Prequisites
+```
+pip install torchvision
+pip install tritonclient
+```
+
 ## Deploying multiple models
 **Setting up the model repository**
 A [model repository](https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/user_guide/model_repository.html) is Triton's way of reading your models and any associated metadata with each model (configurations, version files, etc.). These model repositories can live in a local or network attached filesystem, or in a cloud object store like AWS S3, Azure Blob Storage or Google Cloud Storage. For more details on model repository location, refer to [the documentation](https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/user_guide/model_repository.html#model-repository-locations) Servers can use also multiple different model repositories. For simplicity, this explanation only uses a single repository stored in the [local filesystem](https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/user_guide/model_repository.html#local-file-system), in the following format:
