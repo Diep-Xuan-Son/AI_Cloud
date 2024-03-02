@@ -80,7 +80,10 @@ For details of all supported fields and their values, refer to the [model config
 ## Installation triton server
 **Run Triton server with docker**
 ```bash
+# Linux
 docker run --gpus=all -it --shm-size=512m --rm -p8000:8000 -p8001:8001 -p8002:8002 -v ${PWD}:/workspace/ -v ${PWD}/my_repository:/models -v ./requirements.txt:/opt/tritonserver/requirements.txt nvcr.io/nvidia/tritonserver:22.08-py3
+# Window
+docker run --gpus=all -it --shm-size=512m --rm -p8000:8000 -p8001:8001 -p8002:8002 -v %cd%:/workspace/ -v %cd%\my_repository:/models -v .\requirements.txt:/opt/tritonserver/requirements.txt nvcr.io/nvidia/tritonserver:22.08-py3
 ```
 **Start serving model**
 ```
