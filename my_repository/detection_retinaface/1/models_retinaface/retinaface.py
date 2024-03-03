@@ -138,4 +138,7 @@ class RetinaFace(nn.Module):
             output = (bbox_regressions, classifications, ldm_regressions)
         else:
             output = (bbox_regressions, F.softmax(classifications, dim=-1), ldm_regressions)
-        return output
+        output_0 = output[0]
+        output_1 = output[1]
+        output_2 = output[2]
+        return output_0, output_1, output_2
