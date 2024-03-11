@@ -38,8 +38,13 @@ input [
 output [
 {
     name: "recognize_face_nodet_preprocessing_output"
+<<<<<<< HEAD
     data_type: TYPE_UINT8
     dims: [ 3, -1, -1 ]
+=======
+    data_type: TYPE_FP32
+    dims: [ 3, 112, 112 ]
+>>>>>>> cb6ecc6a2bc09cbd645b38c58bee621503a9d51c
 }
 ]
 

@@ -29,17 +29,12 @@ import json
 
 import numpy as np
 import torch
-import torchvision.transforms as transforms
-import cv2
-# from sklearn import preprocessing
-from face_preprocess import preprocess as face_preprocess
 # triton_python_backend_utils is available in every Triton Python model. You
 # need to use this module to create inference requests and responses. It also
 # contains some utility functions for extracting information from model_config
 # and converting Triton input/output types to numpy types.
 import triton_python_backend_utils as pb_utils
-from PIL import Image
-
+from sklearn import preprocessing
 
 class TritonPythonModel:
 	"""Your Python model must use the same class name. Every Python model
@@ -67,59 +62,13 @@ class TritonPythonModel:
 
 		# Get OUTPUT0 configuration
 		output_config = pb_utils.get_output_config_by_name(
-			model_config, "recognize_face_preprocessing_output"
+			model_config, "recognize_face_postprocessing_output"
 		)
 
 		# Convert Triton types to numpy types
 		self.output_dtype = pb_utils.triton_string_to_numpy(
 			output_config["data_type"]
 		)
-<<<<<<< HEAD
-		self.imgsz = 112
-		self.use_detection = False
-
-	def preprocess(img, bboxes, landms):
-		im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
-=======
-		self.imgsz = [112,112]
-		self.use_detection = False
-
-	def preprocess(self, img, bboxes, landms):
-		img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
->>>>>>> cb6ecc6a2bc09cbd645b38c58bee621503a9d51c
-		# biggestBox = None
-		maxArea = 0
-		for j, bbox in enumerate(bboxes):
-			x1, y1, x2, y2 = bbox
-			area = (x2-x1) * (y2-y1)
-			if area > maxArea:
-			# if area > maxArea:
-				maxArea = area
-				biggestBox = bbox
-				landmarks = landms[j]
-		# if biggestBox is not None:
-		bbox = np.array(biggestBox)
-		landmarks = np.array([landmarks[0], landmarks[2], landmarks[4], landmarks[6], landmarks[8],
-					landmarks[1], landmarks[3], landmarks[5], landmarks[7], landmarks[9]])
-		landmarks = landmarks.reshape((2,5)).T
-
-<<<<<<< HEAD
-		nimg = face_preprocess(im, bbox, landmarks, image_size=self.imgsz)
-=======
-		nimg = face_preprocess(img, bbox, landmarks, image_size=self.imgsz)
->>>>>>> cb6ecc6a2bc09cbd645b38c58bee621503a9d51c
-		# cv2.imwrite("aaaaa.jpg", nimg)
-		nimg = cv2.resize(nimg, (112,112), interpolation=cv2.INTER_AREA)
-		nimg_transformed = cv2.cvtColor(nimg, cv2.COLOR_BGR2RGB)
-		nimg_transformed = np.transpose(nimg, (2,0,1))
-
-<<<<<<< HEAD
-		input_blob = np.expand_dims(nimg_transformed, axis=0)
-		return input_blob
-=======
-		# input_blob = np.expand_dims(nimg_transformed, axis=0)
-		return nimg_transformed
->>>>>>> cb6ecc6a2bc09cbd645b38c58bee621503a9d51c
 
 	def execute(self, requests):
 		"""`execute` MUST be implemented in every Python model. `execute`
@@ -149,49 +98,15 @@ class TritonPythonModel:
 		# and create a pb_utils.InferenceResponse for each of them.
 		for request in requests:
 			# Get INPUT0
-			in_img = pb_utils.get_input_tensor_by_name(
-				request, "recognize_face_preprocessing_input_image"
+			in_feature = pb_utils.get_input_tensor_by_name(
+				request, "recognize_face_postprocessing_input"
 			)
-			in_det = pb_utils.get_input_tensor_by_name(
-				request, "recognize_face_preprocessing_input_dets"
-			)
-			in_landm = pb_utils.get_input_tensor_by_name(
-				request, "recognize_face_preprocessing_input_landms"
-			)
-<<<<<<< HEAD
+			in_feature = in_feature.as_numpy()
 
-
-			image = in_img.as_numpy()[0]
-			bboxes = in_det.as_numpy()
-			landms = in_landm.as_numpy()
-
-			#image = Image.open(io.BytesIO(img.tobytes()))
-			#image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR) 
-			input_trans = preprocess(image, bboxes, landms)
-			input_trans = np.array(input_trans)
+			feature_norms = preprocessing.normalize(in_feature,axis=1).flatten().reshape(-1,in_feature.shape[1])
 
 			out_tensor = pb_utils.Tensor(
-				"recognize_face_nodet_preprocessing_output", input_trans.astype(output_dtype)
-=======
-			input_transs = []
-			for i, image in enumerate(in_img.as_numpy()):
-				bboxes = in_det.as_numpy()
-				bboxes = bboxes[bboxes[:,4]==i][:,:4]
-				landms = in_landm.as_numpy()
-				landms = landms[landms[:,10]==i][:,:10]
-				input_trans = self.preprocess(image, bboxes, landms)
-				input_transs.append(np.array(input_trans))
-
-			# image = in_img.as_numpy()[0]
-			# bboxes = in_det.as_numpy()
-			# landms = in_landm.as_numpy()
-
-			# input_trans = self.preprocess(image, bboxes, landms)
-			input_transs = np.array(input_transs)
-
-			out_tensor = pb_utils.Tensor(
-				"recognize_face_preprocessing_output", input_transs.astype(output_dtype)
->>>>>>> cb6ecc6a2bc09cbd645b38c58bee621503a9d51c
+				"recognize_face_postprocessing_output", feature_norms.astype(output_dtype)
 			)
 
 			# Create InferenceResponse. You can set an error here in case

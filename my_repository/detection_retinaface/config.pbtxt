@@ -56,3 +56,7 @@ output [
     dims: [ -1, 10 ]
   }
 ]
+
+dynamic_batching { }
+
+instance_group [{ kind: KIND_CPU }]

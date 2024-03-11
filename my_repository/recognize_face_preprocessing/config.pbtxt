@@ -36,12 +36,20 @@ input [
 {
     name: "recognize_face_preprocessing_input_dets"
     data_type: TYPE_FP32
+<<<<<<< HEAD
     dims: [ -1, 4 ]
+=======
+    dims: [ 5 ]
+>>>>>>> cb6ecc6a2bc09cbd645b38c58bee621503a9d51c
 },
 {
     name: "recognize_face_preprocessing_input_landms"
     data_type: TYPE_FP32
+<<<<<<< HEAD
     dims: [ -1, 10 ]
+=======
+    dims: [ 11 ]
+>>>>>>> cb6ecc6a2bc09cbd645b38c58bee621503a9d51c
 }
 ]
 
@@ -49,7 +57,11 @@ output [
 {
     name: "recognize_face_preprocessing_output"
     data_type: TYPE_FP32
+<<<<<<< HEAD
     dims: [ -1 ]
+=======
+    dims: [ 3, 112, 112 ]
+>>>>>>> cb6ecc6a2bc09cbd645b38c58bee621503a9d51c
 }
 ]
 

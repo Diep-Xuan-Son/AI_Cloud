@@ -1,3 +1,7 @@
 torchvision
 opencv-python-headless
 scikit-learn
+<<<<<<< HEAD
+=======
+scikit-image
+>>>>>>> cb6ecc6a2bc09cbd645b38c58bee621503a9d51c

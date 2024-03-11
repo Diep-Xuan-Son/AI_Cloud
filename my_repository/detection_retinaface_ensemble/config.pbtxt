@@ -38,17 +38,29 @@ output [
   {
     name: "confs"
     data_type: TYPE_FP32
+<<<<<<< HEAD
     dims: [ -1, 2 ]
+=======
+    dims: [ 2 ]
+>>>>>>> cb6ecc6a2bc09cbd645b38c58bee621503a9d51c
   },
   {
     name: "dets"
     data_type: TYPE_FP32
+<<<<<<< HEAD
     dims: [ -1, 5 ]
+=======
+    dims: [ 5 ]
+>>>>>>> cb6ecc6a2bc09cbd645b38c58bee621503a9d51c
   },
   {
     name: "landms"
     data_type: TYPE_FP32
+<<<<<<< HEAD
     dims: [ -1, 11 ]
+=======
+    dims: [ 11 ]
+>>>>>>> cb6ecc6a2bc09cbd645b38c58bee621503a9d51c
   },
   {
     name: "preprocessed_image_info"
