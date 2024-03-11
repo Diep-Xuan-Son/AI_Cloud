@@ -56,3 +56,8 @@ output [
 dynamic_batching { }
 
 instance_group [{ kind: KIND_CPU }]
+
+parameters: {
+  key: "EXECUTION_ENV_PATH",
+  value: {string_value: "/opt/tritonserver/env/son_triton.tar.gz"}
+}

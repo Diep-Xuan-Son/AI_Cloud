@@ -24,10 +24,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-<<<<<<< HEAD
-<<<<<<< HEAD:my_repository/recognize_face_extract_feature/config.pbtxt
-=======
->>>>>>> cb6ecc6a2bc09cbd645b38c58bee621503a9d51c
 name: "recognize_face_extract_feature"
 platform: "onnxruntime_onnx"
 max_batch_size : 0
@@ -46,34 +42,6 @@ output [
   }
 ]
 
-<<<<<<< HEAD
-
-=======
-name: "recognize_face_postprocessing"
-backend: "python"
-max_batch_size : 64
-input [
-  {
-    name: "recognize_face_postprocessing_input"
-    data_type: TYPE_FP32
-    dims: [ 512 ]
-  }
-]
-
-output [
-  {
-    name: "recognize_face_postprocessing_output"
-    data_type: TYPE_FP32
-    dims: [ 512 ]
-  }
-]
-
 dynamic_batching { }
 
 instance_group [{ kind: KIND_CPU }]
->>>>>>> cb6ecc6a2bc09cbd645b38c58bee621503a9d51c:my_repository/recognize_face_postprocessing/config.pbtxt
-=======
-dynamic_batching { }
-
-instance_group [{ kind: KIND_CPU }]
->>>>>>> cb6ecc6a2bc09cbd645b38c58bee621503a9d51c

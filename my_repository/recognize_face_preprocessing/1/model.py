@@ -74,19 +74,11 @@ class TritonPythonModel:
 		self.output_dtype = pb_utils.triton_string_to_numpy(
 			output_config["data_type"]
 		)
-<<<<<<< HEAD
-		self.imgsz = 112
-		self.use_detection = False
-
-	def preprocess(img, bboxes, landms):
-		im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
-=======
 		self.imgsz = [112,112]
 		self.use_detection = False
 
 	def preprocess(self, img, bboxes, landms):
 		img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
->>>>>>> cb6ecc6a2bc09cbd645b38c58bee621503a9d51c
 		# biggestBox = None
 		maxArea = 0
 		for j, bbox in enumerate(bboxes):
@@ -103,23 +95,14 @@ class TritonPythonModel:
 					landmarks[1], landmarks[3], landmarks[5], landmarks[7], landmarks[9]])
 		landmarks = landmarks.reshape((2,5)).T
 
-<<<<<<< HEAD
-		nimg = face_preprocess(im, bbox, landmarks, image_size=self.imgsz)
-=======
 		nimg = face_preprocess(img, bbox, landmarks, image_size=self.imgsz)
->>>>>>> cb6ecc6a2bc09cbd645b38c58bee621503a9d51c
 		# cv2.imwrite("aaaaa.jpg", nimg)
 		nimg = cv2.resize(nimg, (112,112), interpolation=cv2.INTER_AREA)
 		nimg_transformed = cv2.cvtColor(nimg, cv2.COLOR_BGR2RGB)
 		nimg_transformed = np.transpose(nimg, (2,0,1))
 
-<<<<<<< HEAD
-		input_blob = np.expand_dims(nimg_transformed, axis=0)
-		return input_blob
-=======
 		# input_blob = np.expand_dims(nimg_transformed, axis=0)
 		return nimg_transformed
->>>>>>> cb6ecc6a2bc09cbd645b38c58bee621503a9d51c
 
 	def execute(self, requests):
 		"""`execute` MUST be implemented in every Python model. `execute`
@@ -158,21 +141,6 @@ class TritonPythonModel:
 			in_landm = pb_utils.get_input_tensor_by_name(
 				request, "recognize_face_preprocessing_input_landms"
 			)
-<<<<<<< HEAD
-
-
-			image = in_img.as_numpy()[0]
-			bboxes = in_det.as_numpy()
-			landms = in_landm.as_numpy()
-
-			#image = Image.open(io.BytesIO(img.tobytes()))
-			#image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR) 
-			input_trans = preprocess(image, bboxes, landms)
-			input_trans = np.array(input_trans)
-
-			out_tensor = pb_utils.Tensor(
-				"recognize_face_nodet_preprocessing_output", input_trans.astype(output_dtype)
-=======
 			input_transs = []
 			for i, image in enumerate(in_img.as_numpy()):
 				bboxes = in_det.as_numpy()
@@ -191,7 +159,6 @@ class TritonPythonModel:
 
 			out_tensor = pb_utils.Tensor(
 				"recognize_face_preprocessing_output", input_transs.astype(output_dtype)
->>>>>>> cb6ecc6a2bc09cbd645b38c58bee621503a9d51c
 			)
 
 			# Create InferenceResponse. You can set an error here in case

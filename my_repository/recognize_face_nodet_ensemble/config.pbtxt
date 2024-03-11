@@ -38,11 +38,7 @@ output [
   {
     name: "feature_norm"
     data_type: TYPE_FP32
-<<<<<<< HEAD
-    dims: [ -1 ]
-=======
     dims: [ 512 ]
->>>>>>> cb6ecc6a2bc09cbd645b38c58bee621503a9d51c
   }
 ]
 

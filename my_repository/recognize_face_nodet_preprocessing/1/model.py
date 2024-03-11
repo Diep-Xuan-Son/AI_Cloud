@@ -76,20 +76,12 @@ class TritonPythonModel:
 		)
 		self.imgsz = 112
 
-<<<<<<< HEAD
-	def preprocess(img):
-=======
 	def preprocess(self, img):
->>>>>>> cb6ecc6a2bc09cbd645b38c58bee621503a9d51c
 		img = cv2.resize(img, (112,112), interpolation=cv2.INTER_AREA)
 		img_transformed = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 		img_transformed = np.transpose(img, (2,0,1))
 
-<<<<<<< HEAD
-		im_transformed = np.expand_dims(nimg_transformed, axis=0)
-=======
 		im_transformed = np.expand_dims(img_transformed, axis=0)
->>>>>>> cb6ecc6a2bc09cbd645b38c58bee621503a9d51c
 		return im_transformed
 
 	def execute(self, requests):
@@ -129,11 +121,7 @@ class TritonPythonModel:
 
 			#image = Image.open(io.BytesIO(img.tobytes()))
 			#image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR) 
-<<<<<<< HEAD
-			input_trans = preprocess(image)
-=======
 			input_trans = self.preprocess(image)
->>>>>>> cb6ecc6a2bc09cbd645b38c58bee621503a9d51c
 			input_trans = np.array(input_trans)
 
 			out_tensor = pb_utils.Tensor(
