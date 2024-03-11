@@ -80,6 +80,7 @@ class TritonPythonModel:
 		self.output1_dtype = pb_utils.triton_string_to_numpy(
 			output1_config["data_type"]
 		)
+		self.imagesz = 640
 
 	def execute(self, requests):
 		"""`execute` MUST be implemented in every Python model. `execute`
@@ -113,33 +114,39 @@ class TritonPythonModel:
 			in_0 = pb_utils.get_input_tensor_by_name(
 				request, "detection_retinaface_preprocessing_input"
 			)
-
-			def image_loader(image):
+			img_out = []
+			img_info = []
+			def image_loader(img):
 				im_height, im_width, _ = img.shape
-				scale = torch.Tensor([im_width, im_height, im_width, im_height])
-				img = cv2.resize(img, (640,640), interpolation=cv2.INTER_AREA)
+				scale = [im_width, im_height, im_width, im_height]
+				img = cv2.resize(img, (self.imagesz,self.imagesz), interpolation=cv2.INTER_AREA)
 				img = np.float32(img)
 				img -= (104, 117, 123)
 				img = img.transpose(2, 0, 1)
-				img = torch.from_numpy(img).unsqueeze(0)
+				# img = torch.from_numpy(img).unsqueeze(0)
 				# img = img.to(self.device)
 				# scale = scale.to(self.device)
 				return [img, scale, im_height, im_width]
+			# print(in_0.as_numpy().shape)
+			# image = in_0.as_numpy()[0]
+			for image in in_0.as_numpy():
+				input = image_loader(image)
+				img_out.append(input[0])
+				img_info.append(input[2:4])
+			img_out = np.array(img_out)
+			img_info = np.array(img_info)
 
-
-			img = in_0.as_numpy()
-
-			image = Image.open(io.BytesIO(img.tobytes()))
-			image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR) 
-			input = image_loader(image)
-			img_out = np.array(input[0])
-			img_info = np.array(input[1:4])
+			#image = Image.open(io.BytesIO(img.tobytes()))
+			#image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR) 
+			# input = image_loader(image)
+			# img_out = np.array(input[0])
+			# img_info = np.expand_dims(np.array(input[2:4]), axis=0)
 
 			out_tensor_0 = pb_utils.Tensor(
-				"detection_preprocessing_output0", img_out.astype(output0_dtype)
+				"detection_retinaface_preprocessing_output0", img_out.astype(output0_dtype)
 			)
 			out_tensor_1 = pb_utils.Tensor(
-				"detection_preprocessing_output1", img_info.astype(output1_dtype)
+				"detection_retinaface_preprocessing_output1", img_info.astype(output1_dtype)
 			)
 
 			# Create InferenceResponse. You can set an error here in case
