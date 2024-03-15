@@ -28,7 +28,6 @@ import io
 import json
 
 import numpy as np
-import torch
 # triton_python_backend_utils is available in every Triton Python model. You
 # need to use this module to create inference requests and responses. It also
 # contains some utility functions for extracting information from model_config

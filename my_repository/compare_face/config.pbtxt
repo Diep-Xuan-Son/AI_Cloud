@@ -53,9 +53,17 @@ output [
   }
 ]
 
-dynamic_batching { }
+dynamic_batching { 
+    max_queue_delay_microseconds: 200
+    preferred_batch_size: [4,8]
+}
 
-instance_group [{ kind: KIND_CPU }]
+instance_group [
+  { 
+    count: 2
+    kind: KIND_CPU 
+  }
+]
 
 parameters: {
   key: "EXECUTION_ENV_PATH",

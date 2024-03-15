@@ -30,9 +30,10 @@ import json
 import numpy as np
 import torch
 import torchvision.transforms as transforms
-import cv2
 from math import ceil
 from itertools import product as product
+import cv2
+from face_preprocess import preprocess as face_preprocess
 # triton_python_backend_utils is available in every Triton Python model. You
 # need to use this module to create inference requests and responses. It also
 # contains some utility functions for extracting information from model_config
@@ -93,29 +94,21 @@ class TritonPythonModel:
 		# You must parse model_config. JSON string is not parsed here
 		model_config = json.loads(args["model_config"])
 
-		# Get OUTPUT0 configuration
-		dets_config = pb_utils.get_output_config_by_name(
-			model_config, "detection_retinaface_postprocessing_dets"
-		)
 		# Get OUTPUT1 configuration
 		classes_config = pb_utils.get_output_config_by_name(
 			model_config, "detection_retinaface_postprocessing_classes"
 		)
-		landmarks_config = pb_utils.get_output_config_by_name(
-			model_config, "detection_retinaface_postprocessing_landmarks"
+		croped_image_config = pb_utils.get_output_config_by_name(
+			model_config, "croped_image"
 		)
 
-		# Convert Triton types to numpy types
-		self.dets_dtype = pb_utils.triton_string_to_numpy(
-			dets_config["data_type"]
-		)
 		# Convert Triton types to numpy types
 		self.classes_dtype = pb_utils.triton_string_to_numpy(
 			classes_config["data_type"]
 		)
 		# Convert Triton types to numpy types
-		self.landmarks_dtype = pb_utils.triton_string_to_numpy(
-			landmarks_config["data_type"]
+		self.croped_image_dtype = pb_utils.triton_string_to_numpy(
+			croped_image_config["data_type"]
 		)
 		self.min_sizes = [[16,32], [64,128], [256,512]]
 		self.steps = [8, 16, 32]
@@ -232,9 +225,8 @@ class TritonPythonModel:
 		  be the same as `requests`
 		"""
 
-		dets_dtype = self.dets_dtype
 		classes_dtype = self.classes_dtype
-		landmarks_dtype = self.landmarks_dtype
+		croped_image_dtype = self.croped_image_dtype
 
 		responses = []
 
@@ -254,24 +246,56 @@ class TritonPythonModel:
 			in_landmark = pb_utils.get_input_tensor_by_name(
 				request, "detection_retinaface_postprocessing_input_landmark"
 			)
+			in_img = pb_utils.get_input_tensor_by_name(
+				request, "detection_retinaface_postprocessing_input_image"
+			)
 
-			out_dets = np.empty((0,5), float)
-			out_classes = np.empty((0,2), float)
-			out_landmarks = np.empty((0,11), float)
-			for i, img_info in enumerate(in_info.as_numpy()):
+			# out_dets = np.empty((0,5), float)
+			# out_classes = np.empty((0,2), float)
+			# out_landmarks = np.empty((0,11), float)
+			croped_images = []
+			out_classes = []
+			for i, img in enumerate(in_img.as_numpy()):
+				img_info = in_info.as_numpy()[i]
 				loc = in_det.as_numpy()[i]
 				conf = in_cls.as_numpy()[i]
 				landms = in_landmark.as_numpy()[i]
 
 				dets = self.postProcess(img_info, loc, conf, landms)
-				img_id = np.broadcast_to(i, (len(dets),1))
-				out_dets = np.vstack( (out_dets, np.append(dets[:,:4], img_id, axis=1)) )	# out[n,4] -> out[n,5] -> out[n,n,5] with out[:,:,-1] is "id" of image
-				out_classes = np.vstack( (out_classes, np.append(dets[:,4][:,None], img_id, axis=1)) )
-				out_landmarks = np.vstack( (out_landmarks, np.append(dets[:,5:], img_id, axis=1)) )
-			# print(np.array(out_dets).shape)
-			out_dets = np.array(out_dets).reshape(-1, 5)
-			out_classes = np.array(out_classes).reshape(-1, 2)
-			out_landmarks = np.array(out_landmarks).reshape(-1, 11)
+
+				bboxes = dets[:,:4]
+				classes = dets[:,4]
+				landms = dets[:,5:]
+
+				#img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+				biggestBox = None
+				maxArea = 0
+				#nimg = np.empty(0)
+				for j, bbox in enumerate(bboxes):
+					x1, y1, x2, y2 = bbox
+					area = (x2-x1) * (y2-y1)
+					if area > maxArea:
+						maxArea = area
+						biggestBox = bbox
+						landmarks = landms[j]
+						out_classes.extend(np.expand_dims(classes, axis=0))
+				if biggestBox is not None:
+					bbox = np.array(biggestBox)
+					landmarks = np.array([landmarks[0], landmarks[2], landmarks[4], landmarks[6], landmarks[8],
+								landmarks[1], landmarks[3], landmarks[5], landmarks[7], landmarks[9]])
+					landmarks = landmarks.reshape((2,5)).T
+					nimg = face_preprocess(img, bbox, landmarks, image_size=[112,112])
+					croped_images.extend(np.expand_dims(nimg, axis=0))
+			out_classes = np.array(out_classes)
+			croped_images = np.array(croped_images)
+			# 	img_id = np.broadcast_to(i, (len(dets),1))
+			# 	out_dets = np.vstack( (out_dets, np.append(dets[:,:4], img_id, axis=1)) )	# out[n,4] -> out[n,5] -> out[n,n,5] with out[:,:,-1] is "id" of image
+			# 	out_classes = np.vstack( (out_classes, np.append(dets[:,4][:,None], img_id, axis=1)) )
+			# 	out_landmarks = np.vstack( (out_landmarks, np.append(dets[:,5:], img_id, axis=1)) )
+
+			# out_dets = np.array(out_dets).reshape(-1, 5)
+			# out_classes = np.array(out_classes).reshape(-1, 2)
+			# out_landmarks = np.array(out_landmarks).reshape(-1, 11)
 
 			# img_info = in_info.as_numpy()[0]
 			# loc = in_det.as_numpy()
@@ -283,14 +307,11 @@ class TritonPythonModel:
 			# out_classes = np.expand_dims(np.array(dets[:,4]), axis=0)
 			# out_landmarks = np.expand_dims(np.array(dets[:,5:]), axis=0)
 
-			out_tensor_dets = pb_utils.Tensor(
-				"detection_retinaface_postprocessing_dets", out_dets.astype(dets_dtype)
-			)
 			out_tensor_classes = pb_utils.Tensor(
 				"detection_retinaface_postprocessing_classes", out_classes.astype(classes_dtype)
 			)
-			out_tensor_landmarks = pb_utils.Tensor(
-				"detection_retinaface_postprocessing_landmarks", out_landmarks.astype(landmarks_dtype)
+			out_tensor_croped_image = pb_utils.Tensor(
+				"croped_image", croped_images.astype(croped_image_dtype)
 			)
 
 			# Create InferenceResponse. You can set an error here in case
@@ -301,7 +322,7 @@ class TritonPythonModel:
 			# pb_utils.InferenceResponse(
 			#    output_tensors=..., TritonError("An error occurred"))
 			inference_response = pb_utils.InferenceResponse(
-				output_tensors=[out_tensor_dets, out_tensor_classes, out_tensor_landmarks]
+				output_tensors=[out_tensor_croped_image, out_tensor_classes]
 			)
 			responses.append(inference_response)
 		# You should return a list of pb_utils.InferenceResponse. Length

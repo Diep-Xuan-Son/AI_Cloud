@@ -45,14 +45,14 @@ output [
 ensemble_scheduling {
   step [
     {
-      model_name: "recognize_face_nodet_preprocessing"
+      model_name: "recognize_face_preprocessing"
       model_version: -1
       input_map {
-        key: "recognize_face_nodet_preprocessing_input_image"
+        key: "recognize_face_preprocessing_input_image"
         value: "input_image"
       }
       output_map {
-        key: "recognize_face_nodet_preprocessing_output"
+        key: "recognize_face_preprocessing_output"
         value: "input_image_transformed"
       }
     },

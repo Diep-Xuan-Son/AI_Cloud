@@ -52,12 +52,8 @@ ensemble_scheduling {
         value: "input_image"
       }
       output_map {
-        key: "dets"
-        value: "input_dets"
-      }
-      output_map {
-        key: "landms"
-        value: "input_landms"
+        key: "croped_image"
+        value: "croped_image"
       }
     },
     {
@@ -65,15 +61,7 @@ ensemble_scheduling {
       model_version: -1
       input_map {
         key: "recognize_face_preprocessing_input_image"
-        value: "input_image"
-      }
-      input_map {
-        key: "recognize_face_preprocessing_input_dets"
-        value: "input_dets"
-      }
-      input_map {
-        key: "recognize_face_preprocessing_input_landms"
-        value: "input_landms"
+        value: "croped_image"
       }
       output_map {
         key: "recognize_face_preprocessing_output"

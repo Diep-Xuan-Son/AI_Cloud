@@ -26,13 +26,13 @@
 
 import numpy as np
 import cv2
-import torch
+# import torch
 import tritonclient.grpc as grpcclient
-from sklearn import preprocessing
+# from sklearn import preprocessing
 
-client = grpcclient.InferenceServerClient(url="192.168.6.137:8001")
+client = grpcclient.InferenceServerClient(url="192.168.6.86:8001")
 
-image_data = cv2.imread("thao.jpg")
+image_data = cv2.imread("data_test/thao.jpg")
 
 image_data = np.expand_dims(image_data, axis=0)
 print(image_data.shape)
@@ -41,7 +41,7 @@ input_tensors = [grpcclient.InferInput("input_image", image_data.shape, "UINT8")
 input_tensors[0].set_data_from_numpy(image_data)
 results = client.infer(model_name="recognize_face_ensemble", inputs=input_tensors)
 output_data = results.as_numpy("feature_norm")
-print(list(output_data))
+print(output_data)
 
 # f1 = np.array([[-1.33881015e-03, -5.33251927e-02,  1.56511337e-02, -5.71907638e-05,
 # -1.29900917e-01,  3.83732462e-02,  4.97137909e-03, -2.12183307e-02,
