@@ -1,0 +1,27 @@
+version: '3'
+services:
+  redis1:
+    image: redis
+    container_name: face-redis1
+    ports: 
+      - "6400:6400"
+    volumes:
+      - ./data:/data
+      - ./config/redis1.conf:/usr/local/etc/redis/redis.conf
+    profiles:
+      - dev1
+    command: redis-server /usr/local/etc/redis/redis.conf
+  redis2:
+    image: redis
+    container_name: face-redis2
+    ports: 
+      - "6401:6401"
+    volumes:
+      - ./data:/data
+      - ./config/redis2.conf:/usr/local/etc/redis/redis.conf
+    profiles:
+      - dev2
+    command: redis-server /usr/local/etc/redis/redis.conf
+
+# docker compose -f docker-compose.yml --profile dev1 up -d
+# docker compose -f docker-compose.yml --profile "*" up -d

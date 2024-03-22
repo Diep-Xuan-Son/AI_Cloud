@@ -1,2 +1,5 @@
 son_triton.tar.gz
-
+/data
+/data/dump.rdb
+/data_test
+/static
