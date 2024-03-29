@@ -149,7 +149,7 @@ for orig_img in image_data0:
 	for i, bbox in enumerate(bboxs):
 		kpt = kpts[i]
 		crop, M_inv, M = align_image(orig_img, bbox, kpt)
-		# crop = cv2.resize(crop, (150,50), interpolation=cv2.INTER_AREA)
+		crop = cv2.resize(crop, (150,50), interpolation=cv2.INTER_AREA)
 		crops.append(crop)
 		cv2.imshow("sdfasdf", crop)
 		cv2.waitKey(0)
@@ -191,17 +191,30 @@ for orig_img in image_data0:
 # h = predictor.get_inputs()[0].shape[2:3][0]
 # print(h)
 # exit()
-norm_img_batch = []
-max_wh_ratio = 0
-for crop in crops:
-	h, w = crop.shape[0:2]
-	wh_ratio = w * 1.0 / h
-	max_wh_ratio = max(max_wh_ratio, wh_ratio)
-for crop in crops:
-	norm_img = resize_norm_img(crop, max_wh_ratio)
-	norm_img = norm_img[np.newaxis, :]
-	norm_img_batch.append(norm_img)
-norm_img_batch = np.concatenate(norm_img_batch)
-print(norm_img_batch.shape)
+# norm_img_batch = []
+# max_wh_ratio = 0
+# for crop in crops:
+# 	h, w = crop.shape[0:2]
+# 	wh_ratio = w * 1.0 / h
+# 	max_wh_ratio = max(max_wh_ratio, wh_ratio)
+# for crop in crops:
+# 	norm_img = resize_norm_img(crop, max_wh_ratio)
+# 	norm_img = norm_img[np.newaxis, :]
+# 	norm_img_batch.append(norm_img)
+# norm_img_batch = np.concatenate(norm_img_batch)
+# print(norm_img_batch.shape)
 
+crops = np.array(crops)
+input_tensors = [grpcclient.InferInput("input_image", crops.shape, "UINT8")]
+input_tensors[0].set_data_from_numpy(crops)
+results = client.infer(model_name="paddleocr_ensemble", inputs=input_tensors)
+preds = results.as_numpy("texts")
+print(preds.astype(str))
+# drop_score = 0.3
+# ctc_decode = CTCLabelDecode(character_dict_path="./test/docs/ppocr_keys_v2.txt", use_space_char=True)
+# rec_result = ctc_decode(preds)
+# print(rec_result)
+# print(np.array(rec_result).dtype)
+# txt_result, check_acc, arv_acc = mode_rec(rec_result, drop_score)
+# print(check_acc)
 #/////////////////////////////////////////////////////////////////
