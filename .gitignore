@@ -5,3 +5,4 @@ son_triton.tar.gz
 /static
 /__pycache__
 /*/*/*/__pycache__
+__pycache__/
