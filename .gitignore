@@ -6,3 +6,6 @@ son_triton.tar.gz
 /__pycache__
 /*/*/*/__pycache__
 __pycache__/
+
+/my_repository/vinai_translate_en2vi
+/my_repository/vinai_translate_vi2en
