@@ -4,3 +4,17 @@ scikit-learn
 scikit-image
 tritonclient[all]
 
+linformer
+vit_pytorch
+pyyaml
+pillow
+#------skinlesion-------
+psutil
+matplotlib
+pandas
+ultralytics
+#///////////////////////
+
+redis
+transformers
+sentencepiece

@@ -28,7 +28,8 @@ import numpy as np
 import cv2
 # import torch
 import tritonclient.grpc as grpcclient
-
+import os 
+os.environ['PYTHONIOENCODING'] = "UTF-8"
 
 client = grpcclient.InferenceServerClient(url="192.168.6.159:8001")
 
@@ -41,23 +42,27 @@ client = grpcclient.InferenceServerClient(url="192.168.6.159:8001")
 # print(type(b.tolist()[0]))
 # exit()
 #-----------------vi2en-------------------------
-text = np.array(["xác định đối tượng trong bức ảnh"])
-text = np.expand_dims(text, axis=0)
-text = np.char.encode(text, encoding = 'utf-8')
-print(type(text[0][0]))
-print(text)
-print(np.char.decode(text, encoding= "utf-8"))
-# exit()
+# text = np.array(["xác định đối tượng trong bức ảnh"])
+# text = np.expand_dims(text, axis=0)
+# text = np.char.encode(text, encoding = 'utf-8')
+# print(type(text[0][0]))
+# print(text)
+# print(np.char.decode(text, encoding= "utf-8"))
+# # exit()
 
-input_tensors = [grpcclient.InferInput("texts", text.shape, "BYTES")]
-input_tensors[0].set_data_from_numpy(text)
-results = client.infer(model_name="vinai_translate_vi2en", inputs=input_tensors)
-output_data = results.as_numpy("en_texts")
-print(output_data.astype(str))
+# input_tensors = [grpcclient.InferInput("texts", text.shape, "BYTES")]
+# input_tensors[0].set_data_from_numpy(text)
+# results = client.infer(model_name="vinai_translate_vi2en", inputs=input_tensors)
+# output_data = results.as_numpy("en_texts")
+# print(output_data.astype(str))
 #///////////////////////////////////////////////
 
 #--------------------en2vi-----------------------
-text = np.array(["xác định đối tượng trong bức ảnh"])
+# dict_disease = {0: 'Acne and Rosacea Photos', 1: 'Actinic Keratosis Basal Cell Carcinoma and other Malignant Lesions', 2: 'Atopic Dermatitis Photos', 3: 'Bullous Disease Photos', 4: 'Cellulitis Impetigo and other Bacterial Infections', 5: 'Eczema Photos', 6: 'Exanthems and Drug Eruptions', 7: 'Hair Loss Photos Alopecia and other Hair Diseases', 8: 'Herpes HPV and other STDs Photos', 9: 'Light Diseases and Disorders of Pigmentation', 10: 'Lupus and other Connective Tissue diseases', 11: 'Melanoma Skin Cancer Nevi and Moles', 12: 'Nail Fungus and other Nail Disease', 13: 'Poison Ivy Photos and other Contact Dermatitis', 14: 'Psoriasis pictures Lichen Planus and related diseases', 15: 'Scabies Lyme Disease and other Infestations and Bites', 16: 'Seborrheic Keratoses and other Benign Tumors', 17: 'Systemic Disease', 18: 'Tinea Ringworm Candidiasis and other Fungal Infections', 19: 'Urticaria Hives', 20: 'Vascular Tumors', 21: 'Vasculitis Photos', 22: 'Warts Molluscum and other Viral Infections'}
+# for disease in dict_disease.values():
+	# print(disease)
+	# text = np.array([f"{disease}"])
+text = np.array(["This image is Viêm da cơ địa disease"])
 text = np.expand_dims(text, axis=0)
 text = np.char.encode(text, encoding = 'utf-8')
 
@@ -65,5 +70,5 @@ input_tensors = [grpcclient.InferInput("texts", text.shape, "BYTES")]
 input_tensors[0].set_data_from_numpy(text)
 results = client.infer(model_name="vinai_translate_en2vi", inputs=input_tensors)
 output_data = results.as_numpy("vi_texts")
-print(output_data.astype(str))
+print(output_data[0][0].decode("utf-8"))
 #////////////////////////////////////////////////

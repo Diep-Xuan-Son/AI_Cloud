@@ -59,3 +59,19 @@ def get_io_compareface(ft1, ft2):
 	outputs.append(grpcclient.InferRequestedOutput("similarity_sort_idx"))
 
 	return inputs, outputs
+
+def get_io_skinlesion(imgs):
+	if len(imgs.shape) < 4:
+		imgs = np.expand_dims(imgs, axis=0)
+	# Infer
+	inputs = []
+	outputs = []
+	inputs.append(grpcclient.InferInput("imgs", imgs.shape, "UINT8"))
+
+	# Initialize the data
+	inputs[0].set_data_from_numpy(imgs)
+
+	outputs.append(grpcclient.InferRequestedOutput("class_top5"))
+	outputs.append(grpcclient.InferRequestedOutput("conf_top5"))
+
+	return inputs, outputs

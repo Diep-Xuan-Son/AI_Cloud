@@ -1,5 +1,6 @@
 uvicorn
 fastapi
 python-multipart
+#tritonclient[all]
 
-redis
+grpcio==1.42.0

@@ -17,21 +17,21 @@ from fastapi.staticfiles import StaticFiles
 from schemes import *
 from triton_services import *
 
-from service_ai.spoof_detection import SpoofDetectionRunnable
+# from service_ai.spoof_detection import SpoofDetectionRunnable
 
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[0]
 IMG_AVATAR = "static/avatar"
 PATH_IMG_AVATAR = f"{str(ROOT)}/{IMG_AVATAR}"
 
-spoofingdet = SpoofDetectionRunnable(**{"model_path": f"{str(ROOT)}/weights/spoofing.pt",
-									"imgsz": 448,
-									"device": 'cpu',
-									"cls_names": ['authentic', 'fake']})
+# spoofingdet = SpoofDetectionRunnable(**{"model_path": f"{str(ROOT)}/weights/spoofing.pt",
+# 									"imgsz": 448,
+# 									"device": 'cpu',
+# 									"cls_names": ['authentic', 'fake']})
 
-TRITONSERVER_IP = os.getenv('TRITONSERVER_IP', "192.168.6.142")
+TRITONSERVER_IP = os.getenv('TRITONSERVER_IP', "192.168.6.159")
 TRITONSERVER_PORT = os.getenv('TRITONSERVER_PORT', 8001)
-REDISSERVER_IP = os.getenv('REDISSERVER_IP', "192.168.6.142")
+REDISSERVER_IP = os.getenv('REDISSERVER_IP', "192.168.6.159")
 REDISSERVER_PORT = os.getenv('REDISSERVER_PORT', 6400)
 tritonClient = get_triton_client(ip_address=f"{TRITONSERVER_IP}:{TRITONSERVER_PORT}")
 redisClient = redis.StrictRedis(host=REDISSERVER_IP,
@@ -177,12 +177,12 @@ async def searchUser(image: UploadFile = File(...)):
 	if len(croped_image)==0:
 		return {"success": False, "error_code": 8001, "error": "Don't find any face"}
 	#---------------spoofing--------------
-	result = spoofingdet.inference([img])[0]
-	print("---------result_spoofing", result)
-	if result[1] > 0.85:
-		img_list = os.listdir("./image_test")
-		cv2.imwrite(f"./image_test/{len(img_list)}.jpg", img)
-		return {"success": False, "error_code": 8002, "error": "Fake face image"}
+	# result = spoofingdet.inference([img])[0]
+	# print("---------result_spoofing", result)
+	# if result[1] > 0.85:
+	# 	img_list = os.listdir("./image_test")
+	# 	cv2.imwrite(f"./image_test/{len(img_list)}.jpg", img)
+	# 	return {"success": False, "error_code": 8002, "error": "Fake face image"}
 	#//////////////////////////////////////
 	#////////////////////////////////////////////////////////////
 	print("------Duration det: ", time.time()-t_det)
@@ -243,16 +243,30 @@ async def spoofingCheck(image: UploadFile = File(...)):
 		if len(croped_image)==0:
 			return {"success": False, "error_code": 8001, "error": "Don't find any face"}
 		#---------------spoofing--------------
-		result = spoofingdet.inference([img])[0]
-		print("---------result_spoofing", result)
-		if result[1] > 0.85:
-			# img_list = os.listdir("./image_test")
-			# cv2.imwrite(f"./image_test/{len(img_list)}.jpg", img)
-			return {"success": False, "error_code": 8002, "error": "Fake face image"}
-		return {"success": True}
+		# result = spoofingdet.inference([img])[0]
+		# print("---------result_spoofing", result)
+		# if result[1] > 0.85:
+		# 	# img_list = os.listdir("./image_test")
+		# 	# cv2.imwrite(f"./image_test/{len(img_list)}.jpg", img)
+		# 	return {"success": False, "error_code": 8002, "error": "Fake face image"}
+		# return {"success": True}
 		#//////////////////////////////////////
 	except Exception as e:
 		return {"success": False, "error": str(e)}
+
+@app.post("/api/skinLesion")
+async def skinLesion(image: UploadFile = File(...)):
+	image_byte = await image.read()
+	nparr = np.fromstring(image_byte, np.uint8)
+	img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+	in_sl, out_sl = get_io_skinlesion(img)
+	results = await tritonClient.infer(model_name="skinlesion_recognition", inputs=in_sl, outputs=out_sl)
+	diseases = results.as_numpy("class_top5").squeeze(0)
+	diseases = [x.decode("utf-8") for x in diseases]
+	print(diseases)
+	conf = results.as_numpy("conf_top5")
+	print(conf)
+	return {"success": True, "Information": f"This disease is maybe {diseases[0]} or {diseases[1]}", "result": {"disease": diseases, "confident": conf.tolist()}}
 
 if __name__=="__main__":
 	host = "0.0.0.0"

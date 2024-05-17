@@ -1,11 +1,12 @@
 version: '3'
 networks:
-  tritonserver_bridge:
+  mynetwork_bridge:
     driver: bridge
 services:
   redis1:
     image: redis
     container_name: face-redis1
+    restart: always
     ports: 
       - "6400:6400"
     volumes:
@@ -27,11 +28,13 @@ services:
     command: redis-server /usr/local/etc/redis/redis.conf
 
   triton_server:
-    image: nvcr.io/nvidia/tritonserver:22.08-py3
+    image: mq/tritonserver
     container_name: triton-server
     restart: always
     build:
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile_triton
+    environment:
+      - PYTHONIOENCODING = UTF-8
     ports: 
       - "8000:8000"
       - "8001:8001"
@@ -42,10 +45,32 @@ services:
       - ./requirements.txt:/opt/tritonserver/requirements.txt
       - ./son_triton.tar.gz:/opt/tritonserver/env/son_triton.tar.gz
     networks:
-      tritonserver_bridge:
+      mynetwork_bridge:
     profiles:
       - triton_server
     command: tritonserver --model-repository=/models --model-control-mode=poll --repository-poll-secs=5
+
+  controller_server:
+    image: mq/controller_ai
+    container_name: controller_ai
+    restart: always
+    environment:
+      - TRITONSERVER_IP = 192.168.6.142
+      - TRITONSERVER_PORT = 8001
+      - REDISSERVER_IP = 192.168.6.142
+      - REDISSERVER_PORT = 6400
+    build:
+      dockerfile: Dockerfile_controller
+    ports: 
+      - "8421:8421"
+    # volumes:
+    #   - .:/workspace/
+    networks:
+      mynetwork_bridge:
+    profiles:
+      - controller_ai
+    command: python3 controller.py
+
 
 # docker compose -f docker-compose.yml --profile dev1 up -d
 # docker compose -f docker-compose.yml --profile "*" up -d

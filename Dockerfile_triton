@@ -1,0 +1,15 @@
+FROM nvcr.io/nvidia/tritonserver:23.08-py3
+
+WORKDIR /opt/tritonserver
+COPY requirements.txt /workspace/requirements.txt
+
+RUN apt-get update && \
+	apt install -y libgl1-mesa-glx
+
+RUN python3 -m pip install --upgrade pip
+RUN python3 -m pip --no-cache-dir install -r /workspace/requirements.txt
+
+ENV PYTHONIOENCODING=UTF-8
+
+# docker build -t tritonserver_mq --load --rm -f Dockerfile .
+# docker run -d -p 8000:8000 --name mq_model_serving tritonserver_mq
